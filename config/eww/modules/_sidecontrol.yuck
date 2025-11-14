@@ -1,0 +1,232 @@
+(defwidget sidecontrol_widget []
+    (revealer
+        :transition "slideright"
+        :duration "${SHOW_SIDECONTROL ? '300ms' : '100ms'}"
+        :reveal {SHOW_SIDECONTROL}
+        (box
+            :orientation "v"
+            :class "container_right"
+            :space-evenly false
+            :style "padding:15px;"
+            :spacing 8
+            (centerbox
+                :orientation "h"
+                :style "padding: 0 5px;"
+                (box
+                    :orientation "h"
+                    :halign "start"
+                    :space-evenly false
+                    :spacing 15
+                    (label :style "font-size:30px;" :text "󰣇")
+                    (label :style "font-size:15px;" :text "${uptime}")
+                )
+                (label)
+                (box
+                    :orientation "h"
+                    :halign "end"
+                    :space-evenly false
+                    :spacing 15
+                    (eventbox :onclick "eww reload" (label :style "font-size:20px;" :text " "))
+                    (label :style "font-size:20px;" :text " ")
+                )
+            )
+            (overlay
+                :vexpand true
+                (box
+                    :orientation "v"
+                    :space-evenly false
+                    :vexpand true
+                    :spacing 8
+                    (control_center)
+                    (notification_center)
+                )
+            )
+            (box :class "cal-box"
+                :orientation "v"
+                :space-evenly false
+                (calendar :class "cal"
+                        :day {"14"}
+                        :month {"11"}
+                        :year {"2025"}
+                )
+            )
+        )
+    )
+)
+
+(defwidget control_center []
+    (box
+        :orientation "v"
+        :space-evenly false
+        :valign "start"
+        :spacing 8
+        (box
+            :orientation "v"
+            :class "container_control_box"
+            :space-evenly false
+            :valign "start"
+            :spacing 8
+            (box
+                :orientation "h"
+                :space-evenly false
+                :spacing 8
+                (centerbox
+                    :orientation "h"
+                    :class "icon_box"
+                    (box
+                        :class "${netinfo.wifi_state != 'unavailable' ? 'active' : 'deactive'}"
+                        (label :class "icon_control" :text "${netinfo.wifi_icon}")
+                    )
+                    (box
+                        :orientation "v"
+                        :class "icon_desc"
+                        (label :text "${substring(netinfo.wifi_device ?: 'wlan0', 0, 8)}" :xalign 0)
+                        (label :width 100 :text "${substring(netinfo.ssid ?: 'Not Connected', 0, 13)}" :xalign 0)
+                    )
+                    (label :class "icon_open" :text "")
+                )
+                (centerbox
+                    :orientation "h"
+                    :class "icon_box"
+                    (box
+                        :class "${netinfo.is_bluetooth_daemon_active ? 'active' : 'deactive' }"
+                        (label :class "icon_control _bluetooth" :text "${netinfo.bluetooth_icon}")
+                    )
+                    (box
+                        :orientation "v"
+                        :class "icon_desc"
+                        (label :text "hci0" :xalign 0)
+                        (label :width 100 :text "${substring(netinfo.connected_device ?: 'Not Connected', 0, 13)}" :xalign 0)
+                    )
+                    (label :class "icon_open" :text "")
+                )
+            )
+            (box
+                :orientation "h"
+                :space-evenly false
+                :spacing 8
+                (centerbox
+                    :orientation "h"
+                    :class "icon_box"
+                    (box
+                        :class "${netinfo.is_vpn_active ? 'active' : 'deactive' }"
+                        (label :class "icon_control _wireguard" :text "${netinfo.vpn_icon}")
+                    )
+                    (box
+                        :orientation "v"
+                        :class "icon_desc"
+                        (label :text "wireguard" :xalign 0)
+                        (label :width 100 :text "${netinfo.vpn_interface ?: 'Not Connected'}" :xalign 0)
+                    )
+                    (label :class "icon_open" :text "")
+                )
+                (centerbox
+                    :orientation "h"
+                    :hexpand true
+                    (box
+                        :class "icon_box single"
+                        :halign "start"
+                        (label :class "icon_control _moon" :text "󰖔 ")
+                    )
+                    (box
+                        :class "icon_box single"
+                        (label :class "icon_control _battery" :text "󰂏")
+                    )
+                    (box 
+                        :class "icon_box single" 
+                        :halign "end"
+                        (label :class "icon_control" :text "󰀝 ")
+                    )
+                )
+            )
+        )
+        (box
+            :orientation "h"
+            :class "container_control_box"
+            :space-evenly false
+            :spacing 16
+            (label :class "icon_control _brightness" :text "󰃠")
+            (scale
+                :draw-value true
+                :value-pos "right"
+                :min 1
+                :max 100
+                :value {brightness.screen}
+                :hexpand true
+                :onchange "brightnessctl set {}% -q"
+            )
+        )
+    )
+)
+
+(defwidget notification_center []
+    (box
+        :orientation "v"
+        :space-evenly false
+        :spacing 8
+        :vexpand true
+        (centerbox
+            :orientation "h"
+            :class "notification_header"
+            (label :halign "start" :text "Notification Center")
+            (label)
+            (label :halign "end" :text " ")
+        )
+        (scroll
+            :vscroll true
+            :vexpand true
+            (box
+                :orientation "v"
+                :space-evenly false
+                :spacing 8
+                (for i in '[1,2,3,4,5,6,7,8,9]'
+                    (box
+                        :orientation "v"
+                        :space-evenly false
+                        :spacing 8
+                        :class "notification_box"
+                        (box
+                            :orientation "h"
+                            :space-evenly false
+                            :spacing 8
+                            (image
+                                :class "notification_icon"
+                                :path "assets/images/player/spotify.svg"
+                                :image-width 48
+                                :image-height 48
+                            )
+                            (box
+                                :orientation "v" 
+                                :class "notification_text"
+                                :space-evenly false
+                                :halign "start"
+                                (box
+                                    :orientation "h"
+                                    :space-evenly false
+                                    :spacing 8
+                                    (label :class "notification_title" :text "Title (mockup)" :xalign 0 :limit-width 18)
+                                    (label :text "")
+                                    (label :hexpand true :class "notification_time" :text "3m" :xalign 1)
+                                )
+                                (label :class "notification_desc" :text "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quaerat dolor aspernatur quasi, nam unde assumenda iure explicabo impedit voluptatum. Facere rerum delectus perferendis, non consequuntur harum! Eveniet rem quasi numquam." :xalign 0 :limit-width 40 :lines 2)
+                            )
+                        )
+                        (revealer
+                            :transition "slidedown"
+                            :reveal false
+                            (box
+                                :orientation "h"
+                                :space-evenly false
+                                :spacing 8
+                                :halign "end"
+                                :class "notification_action"
+                                (button (label :text "Got it"))
+                                (button (label :text "Hold on"))
+                            )
+                        )
+                    )
+                )
+            )
+        )
+    )
+)

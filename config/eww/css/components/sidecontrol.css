@@ -1,0 +1,115 @@
+.sidecontrol {
+    background-color: transparent;
+    padding: 0;
+}
+
+/* Control Center */
+.container_control_box {
+    background-color: @background_alt;
+    padding: 8px;
+    border-radius: 15px;
+}
+
+.icon_box {
+    background-color: @background;
+    border-radius: 15px;
+}
+.icon_box>box:first-child {
+    border-radius: 15px;
+    padding: 10px 15px;
+    padding-right: 25px;
+}
+.icon_box>.active { background-color: @primary; }
+.icon_box>.deactive { background-color: @surface_alt; }
+.icon_box.single {
+    padding: 10px 20px;
+    padding-right: 10px;
+}
+
+.icon_control { font-size: 24px; }
+.icon_control._battery { padding-right: 10px; }
+.icon_control._brightness { padding-left: 10px;}
+.icon_control._bluetooth {
+    margin-left: 5px;
+    margin-right: -5px;
+}
+.icon_control._wireguard {
+    margin-left: 2px;
+    margin-right: -2px;
+}
+.icon_control._nightlight {
+    margin-left: -1px;
+    margin-right: 1px;
+}
+.icon_desc { padding: 0 10px; }
+.icon_desc>label:first-child { font-weight: bold; }
+.icon_open { padding-right: 10px; }
+/* Control Center */
+
+
+
+/* Notification Center */
+.notification_header {
+    border-bottom: solid 1px @surface;
+    padding: 3px 2px;
+}
+
+.notification_header>label {
+    font-weight: bold;
+}
+
+.notification_box {
+    background-color: @background_alt;
+    border-radius: 10px;
+    padding: 15px 10px;
+}
+/* Notification Center */
+
+
+
+/* Calendar */
+.cal-box {
+  font-weight: Bold;
+  font-size: 0.9rem;
+  background-color: @background;
+  border-radius: 0.5rem;
+  padding: 0 1rem 0.2rem;
+  color: @surface;
+  background-color: @background_alt;
+}
+
+.cal {
+  background-color: inherit;
+  padding: 0.5rem 0.15rem 0.2rem;
+}
+
+.cal>* {
+  border: solid 0px transparent;
+}
+
+.highlight {
+  padding: 10rem;
+}
+
+calendar:selected {
+  color: @tertiary;
+}
+
+calendar.header {
+  color: @tertiary;
+  font-weight: bold;
+}
+
+calendar.button {
+  color: @surface;
+}
+
+calendar.highlight {
+  color: @secondary;
+  font-weight: bold;
+}
+
+calendar:indeterminate {
+  color: @surface_alt;
+}
+/* Calendar */

@@ -1,0 +1,10 @@
+.dock {
+    background-color: transparent;
+    padding: 0;
+}
+
+.client-icon {
+    background-repeat: no-repeat;
+    background-clip: content-box;
+    background-size: cover;
+}

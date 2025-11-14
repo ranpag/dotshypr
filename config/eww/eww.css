@@ -1,0 +1,43 @@
+@import "./css/_colors.css";
+@import "./css/top.css";
+@import "./css/components/dock.css";
+@import "./css/components/sidecontrol.css";
+
+* {
+  font-family: JetBrainsMono Nerd Font, sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: @surface;
+}
+
+.bar {
+  background-color: transparent;
+  padding: 0 7.5px;
+  padding-top: 5px;
+  padding-bottom: 2px;
+}
+
+.container {
+  background:
+    linear-gradient(@background, @background) padding-box,
+    linear-gradient(45deg, @primary, @secondary, @tertiary) border-box;
+  border-radius: 8px;
+  border-bottom: 2px solid transparent;
+  padding: 5px 8px;
+  box-shadow: 2px -2px 5px rgba(0, 0, 0, 0.4);
+}
+
+.container_right {
+  background:
+    linear-gradient(@background, @background) padding-box,
+    linear-gradient(45deg, @primary, @secondary, @tertiary) border-box;
+  border-radius: 8px;
+  border-left: 2px solid transparent;
+  border-bottom: 2px solid transparent;
+  padding: 5px 8px;
+  box-shadow: 2px -2px 5px rgba(0, 0, 0, 0.4);
+}
+
+.tooltip {
+  color: @surface;
+}

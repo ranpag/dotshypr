@@ -1,0 +1,41 @@
+(include "./modules/system.yuck")
+
+(defwidget local_widget []
+    (box
+        :orientation "h" 
+        :class "container date-container"
+        :space-evenly false
+        :spacing 8
+        (date_time_widget)
+        (mini_weather_widget)
+        (battery_widget)
+    )
+)
+
+(defwidget date_time_widget []
+    (box
+        :orientation "v" 
+        :class "date-box"
+        :halign "start"
+        :space-evenly true
+        (label :class "time" :text "${formattime(EWW_TIME, '%H:%M')}" :xalign 0)
+        (label :class "today" :text "${formattime(EWW_TIME, '%A, %d/%m')}" :xalign 0)
+    )
+)
+
+(defwidget mini_weather_widget []
+    (box
+        :orientation "v"
+        :class ""
+        :halign "start"
+        :space-evenly false
+        :spacing 4
+        (box
+            :orientation "h" 
+            :space-evenly true
+            (label :class "temperature" :text "${round(weather?.current?.temperature_2m, 0) ?: '-'}${weather?.current_units?.temperature_2m ?: '°C'}" :xalign 0.2 :yalign 0.5)
+            (label :class "weather-icon" :text "${weather?.current?.weather_alt?.icon ?: ''}" :xalign 0.7 :yalign 0.5)
+        )
+        (label :class "weather-desc" :text "${weather?.current?.weather_alt?.desc ?: ''}" :xalign 0.5)
+    )
+)
