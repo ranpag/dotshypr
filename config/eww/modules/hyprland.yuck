@@ -1,23 +1,20 @@
 (defwidget title_widget []
     (box
-        :orientation "h" 
-        :class "container"
-        :halign "start"
+        :orientation "h"
+        :class "container title_box"
         :space-evenly false
         :spacing 8
         (box
-            :class "sparkle-box"
-            :halign "start"
+            :class "sparkle_box"
             :valign "center"
-            (label :class "sparkle" :text "" :xalign 0)
+            (label :class "sparkle" :text "")
         )
         (box
-            :orientation "v" 
-            :class ""
-            :halign "start"
+            :orientation "v"
             :space-evenly false
-            (label :class "current-workspace" :text "Workspace ${title.current_workspace ?: ''}" :xalign 0 :limit-width 18)
-            (label :class "current-window" :text "~ ${title.focused_window_title ?: ''}" :xalign 0 :limit-width 25)
+            :spacing 4
+            (label :class "current_workspace" :text "Workspace ${title.current_workspace ?: ''}" :xalign 0 :limit-width 18)
+            (label :class "current_window" :text "~ ${title.focused_window_title ?: ''}" :xalign 0 :limit-width 25)
         )
     )
 )

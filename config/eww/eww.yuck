@@ -2,50 +2,10 @@
 (include "./modules/localy.yuck")
 (include "./modules/hyprland.yuck")
 (include "./modules/player.yuck")
-(include "./modules/netinfo.yuck")
-(include "./modules/_sidecontrol.yuck")
+(include "./modules/status.yuck")
+(include "./modules/_bar.yuck")
 (include "./modules/_dock.yuck")
-
-(defwidget bar_left []
-    (box
-        :orientation "h"
-        :halign "start"
-        :space-evenly false
-        :spacing 8
-        (title_widget)
-        (systray
-            :class "container"
-            :halign "start"
-            :valign "start"
-            :spacing 2
-            :orientation "h"
-            :space-evenly false
-            :icon-size 24 :prepend-new: true
-        )
-    )
-)
-
-(defwidget bar_center []
-    (box
-        :orientation "h"
-        :space-evenly false
-        :spacing 8
-        (mini_player_widget :metadata {player-metadata} :show_play_pause {show_play_pause})
-        (local_widget)
-    )
-)
-
-
-(defwidget bar_right []
-    (box
-        :orientation "h"
-        :space-evenly true
-        (eventbox
-            :onclick "eww update SHOW_SIDECONTROL=${!SHOW_SIDECONTROL}"
-            (net_widget)
-        )
-    )
-)
+(include "./modules/_sidecontrol.yuck")
 
 ;; DEFWINDOW
 

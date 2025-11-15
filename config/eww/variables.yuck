@@ -71,4 +71,4 @@
 (defvar show_play_pause false)
 (defvar show_dock true)
 (defvar show_dock_persist false)
-(defvar SHOW_SIDECONTROL false)
+(defvar SHOW_SIDECONTROL true)

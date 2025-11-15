@@ -1,0 +1,37 @@
+(defwidget bar_left []
+    (box
+        :orientation "h"
+        :halign "start"
+        :space-evenly false
+        :spacing 8
+        (title_widget)
+        (systray
+            :icon-size 24 :prepend-new true
+            :orientation "h"
+            :class "container"
+            :halign "start"
+            :valign "start"
+            :space-evenly false
+            :spacing 2
+        )
+    )
+)
+
+(defwidget bar_center []
+    (box
+        :orientation "h"
+        :space-evenly false
+        :spacing 8
+        (mini_player_widget :metadata {player-metadata})
+        (local_widget)
+    )
+)
+
+(defwidget bar_right []
+    (box
+        :orientation "h"
+        :space-evenly false
+        :halign "end"
+        (status_widget)
+    )
+)

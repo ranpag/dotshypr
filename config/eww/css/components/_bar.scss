@@ -1,0 +1,73 @@
+// @defwindow
+.bar {
+    background-color: transparent;
+    padding: 5px 7.5px 2px 7.5px;
+}
+
+.title_box {
+    .sparkle_box {
+        background-color: $background_alt;
+        border-radius: 99px;
+        padding: .4em 1.4em .4em .9em;
+    
+        &>.sparkle { font-size: 2em; }
+    }
+
+    .current_workspace {
+        font-size: 1.5em;
+        font-weight: bold;
+    }
+}
+
+
+
+.mini_player_box {
+    .player_image_box { border-radius: 8px; }
+    .player_play_pause { font-size: 1.4em; }
+    .player_artist {
+        font-size: 1.4em;
+        font-weight: bold;
+    }
+}
+
+.date_box {
+    .time {
+        font-size: 1.4em;
+        font-weight: 800;
+    }
+    .today {
+        font-size: 1.15em;
+        font-weight: 600;
+    }
+}
+
+.weather_box {
+    .temperature { font-weight: 500; }
+    .weather_icon {
+        font-size: 1.45em;
+        font-weight: 700;
+    }
+    .weather_desc {
+        font-size: .9em;
+        font-weight: 500;
+    }
+}
+
+.battery_box {
+    background-color: $background_alt;
+    border-radius: 99px;
+    padding: 0 3px;
+
+    .battery_icon { font-size: .8em; }
+}
+
+
+.status_box {
+    padding: .4em 1.15em .4em .75em;
+
+    .status_icon { font-size: 1.4em; }
+    .status_text {
+        font-weight: 500;
+        font-size: 1.15em;
+    }
+}

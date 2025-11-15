@@ -1,0 +1,34 @@
+@import "css/colors";
+@import "css/components/bar";
+@import "css/components/dock";
+@import "css/components/sidecontrol";
+
+window {
+    font-family: "JetBrainsMono Nerd Font", sans-serif;
+    font-size: 13px;
+    font-weight: normal;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    color: $surface;
+}
+
+.container {
+    background:
+        linear-gradient($background, $background) padding-box,
+        linear-gradient(45deg, $primary, $secondary, $tertiary) border-box;
+    border-radius: 8px;
+    border-bottom: 2px solid transparent;
+    padding: 5px 8px;
+    box-shadow: 2px -2px 5px rgba(0, 0, 0, 0.4);
+}
+
+.container_right {
+    border-left: 2px solid transparent;
+}
+
+scale {
+    margin-right: 8px;
+}

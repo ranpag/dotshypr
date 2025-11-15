@@ -5,7 +5,6 @@
         :valign "end"
         (eventbox
             :onhoverlost "eww update show_dock=false"
-            :orientation "h"
             (revealer
                 :transition "slideup"
                 :reveal {show_dock || show_dock_persist}
@@ -15,28 +14,29 @@
                     :space-evenly false
                     (eventbox
                         :onclick "eww update show_dock_persist=${!show_dock_persist}"
-                        :space-evenly false
-                        :cursor "pointer"
-                        (image
-                            :image-width 20
-                            :image-height 20
-                            :icon-size 20
-                            :path "assets/svg/pin-${show_dock_persist ? 'off' : 'on'}.svg"
-                        )
-                    )
-            
-                    (label :text "｜" :style "color:rgba(128, 128, 128, .4);")
-            
-                    (clients_widget)
-            
-                    (label :text "｜" :style "color:rgba(128, 128, 128, .5);")
-            
-                    (eventbox
-                        :onclick "notify-send 'app launcher'"
-                        :space-evenly false
                         :cursor "pointer"
                         (tooltip
-                            (label :class "tooltip" :text "Open App Launcher")
+                            (label :class "tooltip" :text "Always show")
+                            (image
+                                :image-width 20
+                                :image-height 20
+                                :icon-size 20
+                                :path "assets/svg/pin-${show_dock_persist ? 'off' : 'on'}.svg"
+                            )
+                        )
+                    )
+                    
+                    (label :text "｜" :style "color:rgba(128, 128, 128, .4);")
+
+                    (clients_widget)
+                                      
+                    (label :text "｜" :style "color:rgba(128, 128, 128, .5);")
+                    
+                    (eventbox
+                        :onclick "notify-send 'app launcher'"
+                        :cursor "pointer"
+                        (tooltip
+                            (label :class "tooltip" :text "Open app launcher")
                             (image
                                 :image-width 32
                                 :image-height 32
@@ -50,7 +50,6 @@
         )
         (eventbox
             :onhover "eww update show_dock=true"
-            :orientation "h" 
             (box
                 :class "container"
                 :orientation "v"

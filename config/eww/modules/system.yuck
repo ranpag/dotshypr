@@ -3,18 +3,18 @@
         (label :class "tooltip" :text "${battery.bat_icon} ${battery.percentage}% | State: ${replace(battery.state, '[-]', ' ')} | Time to Full: ${battery.time_to_full} | Mode: ${battery.mode} ${battery.mode_icon}")
         (box 
             :orientation "v"
-            :class "battery-box"
+            :class "battery_box"
             :space-evenly true
-            (label :class "power-mode-icon" :text "${battery.mode_icon} " :xalign 1)
+            (label :class "power_mode_icon" :text "${battery.mode_icon} " :xalign 1)
             (circular-progress
-                :class "circle battery-icon"
+                :class "circle"
                 :start-at 75
                 :value {battery.percentage}
                 :thickness 1.5
                 :clockwise true
                 :width 18
                 :height 18
-                (label :class "circle-icon battery-icon" :text "${battery.bat_icon}")
+                (label :class "circle_icon battery_icon" :text "${battery.bat_icon}")
             )
         ) 
     )

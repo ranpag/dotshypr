@@ -2,10 +2,10 @@
     (revealer
         :transition "slideright"
         :duration "${SHOW_SIDECONTROL ? '300ms' : '100ms'}"
-        :reveal {SHOW_SIDECONTROL}
+        :reveal SHOW_SIDECONTROL
         (box
             :orientation "v"
-            :class "container_right"
+            :class "container container_right"
             :space-evenly false
             :style "padding:15px;"
             :spacing 8
@@ -44,11 +44,7 @@
             (box :class "cal-box"
                 :orientation "v"
                 :space-evenly false
-                (calendar :class "cal"
-                        :day {"14"}
-                        :month {"11"}
-                        :year {"2025"}
-                )
+                (calendar :class "cal")
             )
         )
     )
