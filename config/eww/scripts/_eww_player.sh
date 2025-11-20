@@ -1,53 +1,74 @@
 #!/usr/bin/env bash
 
 escape() {
-    echo "$1" | sed \
-        -e 's/\\/\\\\/g' \
-        -e 's/"/\\"/g' \
-        -e 's/\t/\\t/g' \
-        -e 's/\r/\\r/g' \
-        -e 's/\n/\\n/g'
+    local s="$1"
+    s=${s//\\/\\\\}
+    s=${s//\"/\\\"}
+    echo "$s"
 }
 
 PLAYER_ART_DEFAULT_DIR="assets/images/player"
 PLAYER_ICON_DEFAULT="󰎇 "
 PLAYER_ART_DEFAULT="$PLAYER_ART_DEFAULT_DIR/default.png"
+art_tmp_file=""
 
-get_media_metadata_json() {
-    local player_status=$(playerctl status 2>/dev/null)
-    local icon=""
-    local player_name=""
+get_metadata_json() {
+    local player_status="$(playerctl status)"
+    local url="${3:-"$(playerctl metadata xesam:url)"}"
 
-    if [[ $player_status = "Playing" || $player_status = "Paused" ]]; then
-        local artist=$(escape "$(playerctl metadata artist)" 2>/dev/null)
-        local title=$(escape "$(playerctl metadata title)" 2>/dev/null)
-        local url=$(escape "$(playerctl metadata xesam:url)" 2>/dev/null)
-        local artUrl=$(escape "$(playerctl metadata mpris:artUrl)" 2>/dev/null)
-        player_name=$(playerctl metadata --format '{{playerName}}' 2>/dev/null)
+    if [[ $player_status = "Playing" || $player_status = "Paused" ]] || [[ -n $url ]]; then
+        local artist="${1:-"$(playerctl metadata artist)"}"
+        local title="${2:-"$(playerctl metadata title)"}"
+        local art_url="${4:-"$(playerctl metadata mpris:artUrl)"}"
+        local icon=""
+        local art_default="$PLAYER_ART_DEFAULT"
 
-        if echo "$url" | grep -q "youtube"; then
-            icon=" "
-            PLAYER_ART_DEFAULT="$PLAYER_ART_DEFAULT_DIR/youtube.svg"
-        elif echo "$url" | grep -q "soundcloud"; then
-            icon="󰓀 "
-            PLAYER_ART_DEFAULT="$PLAYER_ART_DEFAULT_DIR/soundcloud.svg"
-        else
-            icon="󰎇 "
-            PLAYER_ART_DEFAULT="$PLAYER_ART_DEFAULT_DIR/default.png"
+        if [[ $art_url =~ ^https:// ]]; then
+            if [[ -f "/tmp/${art_url##*/}" ]]; then
+                art_tmp_file="/tmp/${art_url##*/}"
+                art_url="$art_tmp_file"
+            else
+                [[ -n $art_tmp_file ]] && rm -f "$art_tmp_file"
+
+                art_tmp_file="/tmp/${art_url##*/}"
+                if curl -s -f "$art_url" -o "$art_tmp_file"; then
+                    art_url="$art_tmp_file"
+                else
+                    art_url=""
+                fi
+            fi
+        elif [[ $art_url =~ ^file:// ]]; then
+            art_url="${art_url/'file://'/''}"
         fi
 
-        [[ -z "$artist" ]] && artist="—"
-        [[ -z "$title" ]] && title=""
-        [[ -z "$artUrl" ]] && artUrl="$PLAYER_ART_DEFAULT"
+        if [[ $url =~ youtube ]]; then
+            icon='<span color=\"#FF0000\"></span>'
+            art_default="$PLAYER_ART_DEFAULT_DIR/youtube.svg"
+        elif [[ $url =~ spotify ]]; then
+            icon='<span color=\"#1ED760\"></span>'
+            art_default="$PLAYER_ART_DEFAULT_DIR/spotify.svg"
+        elif [[ $url =~ soundcloud ]]; then
+            icon='<span color=\"#F37422\">󰓀</span>'
+            art_default="$PLAYER_ART_DEFAULT_DIR/soundcloud.svg"
+        fi
 
-        printf '{"icon": "%s", "artist": "%s", "title": "%s", "artUrl": "%s", "url": "%s", "status": "%s"}' "$icon" "$artist" "$title" "$artUrl" "$url" "$player_status"
+        artist="$(escape "$artist")"
+        title="$(escape "$title")"
+        icon="${icon:-PLAYER_ICON_DEFAULT}"
+        art_url="${art_url:-art_default}"
+
+        printf '{"icon": "%s", "artist": "%s", "title": "%s", "art_url": "%s", "url": "%s", "status": "%s"}\n' \
+            "$icon" "$artist" "$title" "$art_url" "$url" "$player_status"        
     else
-        printf '{"icon": "%s", "empty": "%s", "artUrl": "%s"}' "$PLAYER_ICON_DEFAULT" "No media playing right now" "$PLAYER_ART_DEFAULT"
+        printf '{"icon":"%s","empty":"No media playing right now","art_url":"%s"}\n' \
+            "$PLAYER_ICON_DEFAULT" "$PLAYER_ART_DEFAULT"
     fi
 }
 
-echo "$(get_media_metadata_json)"
+get_metadata_json
 
-playerctl --follow status 2>/dev/null | while read -r _; do
-    echo "$(get_media_metadata_json)"
+playerctl --follow metadata \
+  --format '{{artist}}{{title}}{{xesam:url}}{{mpris:artUrl}}' |
+while IFS='' read -r artist title url art_url; do
+    get_metadata_json "$artist" "$title" "$url" "$art_url"
 done

@@ -1,8 +1,16 @@
 #!/usr/bin/env bash
 
-ICON_THEME="$(echo $GTK_ICON_THEME | awk -F '=' '{printf $2}')"
-ICON_THEME="${ICON_THEME:-$(gsettings get org.gnome.desktop.interface icon-theme | tr -d "'")}"
-ICON_THEME="${ICON_THEME:-$(grep "gtk-icon-theme-name" ~/.config/gtk-3.0/settings.ini | awk -F '=' '{printf $2}')}"
+ICON_THEME="$GTK_ICON_THEME"
+
+if [[ -z  $ICON_THEME ]]; then
+    ICON_THEME="$(gsettings get org.gnome.desktop.interface icon-theme)"
+    ICON_THEME="${ICON_THEME//\'/}"
+fi
+
+if [[ -z  $ICON_THEME ]]; then
+    ICON_THEME="$(grep "gtk-icon-theme-name" ~/.config/gtk-3.0/settings.ini)"
+    ICON_THEME="${ICON_THEME##*=}"
+fi
 
 DESKTOP_DIR=(
     "$HOME/.local/share/applications"
@@ -12,243 +20,138 @@ ICONS_DIR=(
     "$HOME/.local/share/icons/$ICON_THEME"
     "/usr/share/icons/$ICON_THEME"
     "/usr/share/icons"
-    "$HOME/.local/share/pixmaps"
-    "/usr/share/pixmaps"
 )
 FALLBACK_ICON_PATH_XWAYLAND="assets/images/x11.svg"
 FALLBACK_ICON_PATH_WAYLAND="assets/images/wayland.svg"
 
+# $1 app_class, $2 is_xwayland
 find_icon_path() {
-    local app_class="$1"
     local xwayland="$2"
-    local search_names=$(echo "$app_class" | tr ' ' '-' | tr '[:upper:]' '[:lower:]')
+    local search_names="${1,,}"
+    search_names="${search_names// /-}"
 
+    local desktop_file=""
+    for dir in "${DESKTOP_DIR[@]}"; do
+        if [[ -f "$dir/${search_names}.desktop" ]]; then
+            desktop_file="$dir/${search_names}.desktop"
+            break
+        fi
+    done
+
+    local icon_val=""
+    if [[ -n $desktop_file ]]; then
+
+        while IFS='=' read -r key value; do
+            [[ $key == "Icon" ]] && icon_val="$value" && break
+        done < "$desktop_file"
+
+        if [[ -n $icon_val ]]; then
+            if [[ $icon_val == /* && -f $icon_val ]]; then
+                echo "$icon_val"
+                return
+            fi
+        fi
+    fi
+
+    icon_val="${icon_val:-$search_names}"
     for icon_dir in "${ICONS_DIR[@]}"; do
-        if [[ -d "$icon_dir" ]]; then
-            for ext in svg xpm png jpg jpeg; do
-                icon_path_found="$(find -L $icon_dir -name "$app_class.$ext" 2>/dev/null | head -n 1)"
-                if [[ -f "$icon_path_found" ]]; then
-                    echo "$icon_path_found"
+        if [[ -d $icon_dir ]]; then
+            for ext in svg png xpm jpg jpeg; do
+                local icon_path_found="$(find -L $icon_dir -name "*$icon_val*.$ext" 2>/dev/null)"
+                local icon_path="${icon_path_found%%$'\n'*}"
+
+                if [[ -f "$icon_path" ]]; then
+                    echo "$icon_path"
                     return
                 fi
             done
         fi
     done
 
-    local desktop_file=""
-    for dir in "${DESKTOP_DIR[@]}"; do
-        if [[ -f "$dir/${$search_names}.desktop" ]]; then
-            desktop_file="$dir/${$search_names}.desktop"
-            break
-        elif [[ -d "$dir" ]]; then
-            local match=$(grep -l "StartupWMClass=.*$app_class" "$dir"/*.desktop 2>/dev/null)
-            if [[ -n "$match" ]]; then
-                desktop_file="$match"
-                break
-            fi
-        fi
-    done
-
-    if [[ -n "$desktop_file" ]]; then
-        local icon_val=$(grep -m1 '^Icon=' "$desktop_file" | cut -d'=' -f2-)
-        if [[ -n "$icon_val" ]]; then
-            if [[ "$icon_val" == /* && -f "$icon_val" ]]; then
-                echo "$icon_val"
-                return
-            else
-                for icon_dir in "${ICONS_DIR[@]}"; do
-                    if [[ -d $icon_dir ]]; then
-                        for ext in svg xpm png jpg jpeg; do
-                            icon_path_found="$(find -L $icon_dir -name "*$icon_val*.$ext" 2>/dev/null | head -n 1)"
-                            if [[ -f "$icon_path_found" ]]; then
-                                echo "$icon_path_found"
-                                return
-                            fi
-                        done
-                    fi
-                done
-            fi
-        fi
-    fi
-
     if [[ $xwayland == "false" ]]; then
         echo "$FALLBACK_ICON_PATH_WAYLAND"
-    else
-        echo "$FALLBACK_ICON_PATH_XWAYLAND"
+        return
     fi
+
+    echo "$FALLBACK_ICON_PATH_XWAYLAND"
 }
 
 get_clients() {
-    eww get workspaces_clients
+    eww get clients
 }
 
 update_clients() {
-    eww update workspaces_clients="$1"
+    eww update clients="$1"
 }
 
+# $1 address $2 class
 open_window() {
     local address="0x$1"
-    local ws_id=$2
+    local class="$2"
+
+    [[ -z $class ]] && return
+
     local current_clients=$(get_clients)
 
-    local client_obj=$(hyprctl clients -j | jq -c \
-        --argjson ws_id "$ws_id" \
+    local new_client=$(hyprctl clients -j | jq -c \
         --arg address "$address" \
         '
-            .[] | 
-            select(.workspace.id == $ws_id and .address == $address) | 
-            {address, class, title, initialClass, initialTitle, pid, hidden, xwayland}
+            .[] | select(.address == $address) | 
+            {address, class, title, pid, hidden, xwayland}
         '
     )
 
-    [[ -z "$client_obj" ]] && return 1
+    [[ -z $new_client ]] && return 1
 
-    local icon_path=$(find_icon_path  "$(echo "$client_obj" | jq -r .class)" "$(echo "$client_obj" | jq -r .xwayland)") 
-    client_obj=$(echo "$client_obj" | jq --arg icon "$icon_path" '. + {icon_path: $icon}')
+    local is_xwayland="$(jq -r '.xwayland' <<<"$new_client")"
+    local icon_path="$(find_icon_path  "$class" "$is_xwayland")"
+    new_client="$(jq --arg icon "$icon_path" '. + {icon_path: $icon}' <<<"$new_client")"
 
-    local new_clients=$(echo "$current_clients" | jq -c \
-        --argjson ws_id "$ws_id" \
-        --argjson client "$client_obj" \
-        '
-            . |= map(
-                if .ws_id == $ws_id then
-                    .clients += [$client]
-                else
-                    .
-                end
-            )
-        '
-    )
+    local new_clients="$(jq -c --argjson client "$new_client" '. += [$client]' <<<"$current_clients")"
 
     update_clients "$new_clients"
 }
 
+# $1 address
 close_window() {
     local address="0x$1"
     local current_clients=$(get_clients)
 
+    [[ -z $1 ]] && return 1
+
     local new_clients=$(echo "$current_clients" | jq -c \
         --arg address "$address" \
-        '. |= map(.clients |= map(select(.address != $address)))'
-    )
-
-    update_clients "$new_clients"
-}
-
-move_window() {
-    local address="0x$1"
-    local destination_ws_id=$2
-    local current_clients=$(get_clients)
-
-    local client_obj=$(echo "$current_clients" | jq -c \
-        --arg address "$address" \
-        '[.[] | .clients[]] | map(select(.address == $address)) | .[0]'
-    )
-    
-    if [ -z "$client_obj" ] || [ "$client_obj" = "null" ]; then
-        notify-send "Error: Client with address $address not found in EWW data."
-        return 1
-    fi
-
-    local new_clients=$(echo "$current_clients" | jq -c \
-        --argjson dest_ws_id "$destination_ws_id" \
-        --arg address "$address" \
-        --argjson client_to_move "$client_obj" \
-        '
-            . |= map(
-                if .ws_id == $dest_ws_id then
-                    .clients += [$client_to_move]
-                else
-                    .clients |= map(select(.address != $address))
-                end
-            )
-        '
-    )
-
-    update_clients "$new_clients"
-}
-
-create_workspace() {
-    local ws_id=$1
-    local ws_name=$2
-    local current_clients=$(get_clients)
-
-    local ws="{\"ws_id\":$ws_id,\"ws_name\":\"$ws_name\",\"clients\":[]}"
-
-    local new_clients=$(echo "$current_clients" | jq -c \
-        --argjson ws "$ws" \
-        '. += [$ws]'
-    )
-
-    update_clients "$new_clients"
-}
-
-destroy_workspace() {
-    local ws_id=$1
-    local current_clients=$(get_clients)
-
-    local new_clients=$(echo "$current_clients" | jq -c \
-        --argjson ws_id "$ws_id" \
-        '. |= map(select(.ws_id != $ws_id))'
+        '. |= map(select(.address != $address))'
     )
 
     update_clients "$new_clients"
 }
 
 sync_window() {
-    local clients_json=$(hyprctl clients -j)
-    local workspaces=$(hyprctl workspaces -j | jq -c '.[] | {id, name}')
-    local clients
+    local clients_json
+    clients_json="$(hyprctl clients -j)"
 
     local output="["
+    local class is_xwayland icon_path
 
-    for ws in $(echo "$workspaces" | jq -c '.'); do
-        ws_id=$(echo "$ws" | jq '.id')
-        ws_name=$(echo "$ws" | jq -r '.name')
+    while IFS= read -r client; do
+        class="$(jq -r '.class' <<<"$client")"
+        is_xwayland="$(jq -r '.xwayland' <<<"$client")"
 
-        clients=$(echo "$clients_json" | jq -c --argjson id "$ws_id" '
-            map(select(.workspace.id == $id)) |
-            map(select(.class and .class != "")) |
-            map({
-                address,
-                class,
-                title,
-                initialClass,
-                initialTitle,
-                pid,
-                hidden
-            }) | .[:2]
-        ')
+        icon_path="$(find_icon_path "$class" "$is_xwayland")"
+        client="$(jq --arg icon "$icon_path" '. + {icon_path: $icon}' <<<"$client")"
 
-        clients=$(echo "$clients" | jq -c '.[]' | while read -r client; do
-            icon_path=$(find_icon_path "$(echo "$client" | jq -r '.class')")
-            echo "$client" | jq --arg icon "$icon_path" '. + {icon_path: $icon}'
-        done | jq -s '.')
+        output+="$client,"
+    done < <(jq -c '.[] | {address, class, title, pid, hidden, xwayland}' <<<"$clients_json")
 
-        output+="{
-            \"ws_id\": $ws_id,
-            \"ws_name\": \"$ws_name\",
-            \"clients\": $clients
-        },"
-    done
+    output="${output%,}]"
 
-    output="${output%,}"
-    output+="]"
-
-    output=$(echo "$output" | jq -c 'sort_by(.id)')
-
-    update_clients "$output"
+    echo "$output" | jq -c .
 }
 
 OPT=$1; shift
 case "$OPT" in
     --sync)         sync_window;;
-    --poll)         sync_window; echo "true";;
-    --open)         open_window "$@";; # address(window) ws_id
-    --close)        close_window "$@";; # address(window)
-    --move)         move_window "$@";; # address(window) dest_ws_id
-    --active)       active_window "$@";; # 
-    --create-ws)    create_workspace "$@";; # ws_id ws_name
-    --destroy-ws)   destroy_workspace "$@";; # ws_id
-    *)              notify-send -u critical "Error" "Invalid operation $OPT\n~/.config/eww/scripts/_eww_hyprclients.sh"; exit 1 ;;
+    --open)         open_window "$@";;
+    --close)        close_window "$@";;
 esac

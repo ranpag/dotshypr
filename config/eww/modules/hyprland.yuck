@@ -13,8 +13,8 @@
             :orientation "v"
             :space-evenly false
             :spacing 4
-            (label :class "current_workspace" :text "Workspace ${title.current_workspace ?: ''}" :xalign 0 :limit-width 18)
-            (label :class "current_window" :text "~ ${title.focused_window_title ?: ''}" :xalign 0 :limit-width 25)
+            (label :class "current_workspace" :text "Workspace ${hyprland.current_workspace_name ?: ''}" :xalign 0 :limit-width 18)
+            (label :class "current_window" :text "~ ${hyprland.focused_window_title ?: ''}" :xalign 0 :limit-width 25)
         )
     )
 )
@@ -23,24 +23,22 @@
     (box
         :orientation "h"
         :space-evenly false
-        (for workspace in workspaces_clients
+        (for client in clients
             (box
                 :orientation "h" 
                 :halign "center"
                 :valign "center"
                 :space-evenly false
-                (for client in {workspace.clients}
-                    (eventbox
-                        :onclick "hyprctl -q dispatch focuswindow pid:${client.pid}"
-                        :cursor "pointer"
-                        (tooltip
-                            (label :class "tooltip" :text "${client.class} | ${client.title}")
-                            (image
-                                :path "${client.icon_path}"
-                                :image-width 42
-                                :image-height 42
-                                :icon-size 42
-                            )
+                (eventbox
+                    :onclick "hyprctl -q dispatch focuswindow pid:${client.pid}"
+                    :cursor "pointer"
+                    (tooltip
+                        (label :class "tooltip" :text "${client.class} | ${client.title}")
+                        (image
+                            :path "${client.icon_path}"
+                            :image-width 42
+                            :image-height 42
+                            :icon-size 42
                         )
                     )
                 )

@@ -1,123 +1,160 @@
 #!/usr/bin/env bash
 
-# --- Airplane mode --- | icon will replace all
-is_airplane_active=false
-airplane_icon="󱢂"
-if ! rfkill list | grep -q "Soft blocked: no"; then
-    is_airplane_active=true
-    airplane_icon="󰀝"
-fi
+declare -A rfkill_devices
+actual_devices_count=0
+blocked_devices_count=0
+
+while read -r type device soft hard; do
+    ((actual_devices_count++))
+    [[ $soft == "blocked" || $hard == "blocked" ]] && ((blocked_devices_count++))
+
+    is_blocked="blocked"
+    [[ $soft == "unblocked" && $hard == "unblocked" ]] && is_blocked="unblocked"
+
+    rfkill_devices["${type}_${device}"]="$is_blocked"
+done < <(rfkill -r -n -o TYPE,DEVICE,SOFT,HARD)
 
 
-# --- Ethernet --- | icon will replace wifi if connected
-is_eth_connected=false
-eth_icon="󰌙"
-if nmcli -t -f TYPE,STATE device | grep -q "^ethernet:connected$"; then
-    is_eth_connected=true
-    eth_icon="󰌘"
-fi
+declare -A network_status
+(( actual_devices_count == blocked_devices_count )) && network_status["plane_mode"]=true
+
+while IFS=':' read -r type state device; do
+    case "$type:$state" in
+        ethernet:connected*)  network_status["eth"]=true ;;
+        wifi:connected*)      network_status["wifi"]="connected" ;;
+        wifi:connecting*)     network_status["wifi"]="connecting";;
+        wireguard:connected*) 
+            network_status["vpn"]=true 
+            network_status["vpn_device"]="$device" 
+            ;;
+        *) continue ;;
+    esac
+done < <(nmcli -t -f TYPE,STATE,DEVICE d)
 
 
-# --- WiFi --- | icon always show
-wifi_state="unavailable"
-wifi_icon="󰤭"
-wifi_device="wlan0"
-ssid=""
-if rfkill list wifi | grep -q "Soft blocked: no" && [[ $is_airplane_active == "false" ]]; then
-    state="$(nmcli -t -f TYPE,STATE device | grep '^wifi:')"
-    if [[ $state == "wifi:connected" ]]; then
-        wifi_state="connected"
-        wifi_signal=$(nmcli -t -f IN-USE,SIGNAL dev wifi list | grep '^\*' | cut -d':' -f2)
-        data=$(nmcli -t -f ACTIVE,SSID,DEVICE dev wifi | grep '^yes:')
-        ssid=$(echo "$data" | cut -d':' -f2)
-        wifi_device=$(echo "$data" | cut -d':' -f3)
+declare -A wifi_connection
 
-        if   [[ $wifi_signal -ge 80 ]]; then
-            wifi_icon="󰤨"
-        elif [[ $wifi_signal -ge 60 ]]; then
-            wifi_icon="󰤥"
-        elif [[ $wifi_signal -ge 40 ]]; then
-            wifi_icon="󰤢"
-        elif [[ $wifi_signal -ge 20 ]]; then
-            wifi_icon="󰤟"
-        else
-            wifi_icon="󰤯"
-        fi
-    elif [[ $state == "wifi:connecting" ]]; then
-        wifi_state="connecting"
-        wifi_icon="󰤯"
-    elif [[ $state == "wifi:disconnected" ]]; then
-        wifi_state="disconnected"
-        wifi_icon="󰤯"
-        nmcli d wifi rescan
-    fi
-fi
+if [[ ${network_status["plane_mode"]} != "true" ]]; then
 
+    for key in "${!rfkill_devices[@]}"; do
+        [[ $key == wlan_* || $key == wifi_* ]] || continue
+        wifi_state="${rfkill_devices[$key]}"
+    done
 
-# --- Bluetooth --- | icon always show
-is_bluetooth_daemon_active=false
-is_bluetooth_connected=false
-connected_device=""
-bluetooth_icon="󰂲"
-if rfkill list bluetooth | grep -q "Soft blocked: no" && [[  $is_airplane_active == "false" ]]; then
-    if systemctl status bluetooth &>/dev/null; then
-        is_bluetooth_daemon_active=true
-        bluetooth_icon="󰂯"
+    wifi_state="${wifi_state:-'blocked'}"
 
-        if bluetoothctl show | grep -q "Powered: yes"; then
-            device_line=$(bluetoothctl devices Connected | head -n 1)
+    if [[ $wifi_state == "blocked" ]]; then
+        wifi_connection["active"]=false
+        wifi_connection["state"]="blocked"
+        wifi_connection["icon"]="󰤭"
+    elif [[ ${network_status["wifi"]} =~ ^connect ]]; then
+        while IFS=':' read -r active device ssid signal bars security; do
+            [[ $active != "yes" ]] && continue
 
-            if [ -n "$device_line" ]; then
-                is_bluetooth_connected=true
-                connected_device=$(echo "$device_line" | cut -d' ' -f3-)
-                bluetooth_icon="󰂱"
+            wifi_connection["active"]=true
+            wifi_connection["state"]="${network_status["wifi"]}"
+            wifi_connection["device"]="$device"
+            wifi_connection["ssid"]="$ssid"
+            wifi_connection["signal"]=$signal
+            wifi_connection["bars"]="$bars"
+            wifi_connection["security"]="$security"
+
+            if   (( signal >= 80 )); then
+                wifi_connection["icon"]="󰤨"
+            elif (( signal >= 60 )); then
+                wifi_connection["icon"]="󰤥"
+            elif (( signal >= 40 )); then
+                wifi_connection["icon"]="󰤢"
+            elif (( signal >= 20 )); then
+                wifi_connection["icon"]="󰤟"
+            else
+                wifi_connection["icon"]="󰤯"
             fi
-        fi
+
+        done < <(nmcli -t -f ACTIVE,DEVICE,SSID,SIGNAL,BARS,SECURITY d wifi)
+    else
+        wifi_connection["active"]=true
+        wifi_connection["state"]="disconnect"
+        wifi_connection["icon"]="󰤯"
     fi
 fi
 
 
-# --- VPN (WireGuard only) --- | show if connected
-is_vpn_active=false
-vpn_interface=""
-vpn_icon="󰦞"
-if nmcli -t -f TYPE,STATE device | grep -q "^wireguard:connected"; then
-    is_vpn_active=true
-    vpn_interface="$(nmcli -t -f TYPE,CONNECTION device | grep wireguard | cut -d':' -f2)"
-    vpn_icon="󰒘"
+declare -A bluetooth_connection
+
+if [[ ${network_status["plane_mode"]} != "true" ]] && systemctl is-active --quiet bluetooth; then
+    
+    for key in "${!rfkill_devices[@]}"; do
+        [[ $key == bluetooth_* ]] || continue
+        bt_state="${rfkill_devices[$key]}"
+    done
+
+    bt_state="${bt_state:-'blocked'}"
+
+    if [[ $bt_state == "blocked" ]]; then
+        bluetooth_connection["active"]=false
+        bluetooth_connection["state"]="blocked"
+        bluetooth_connection["icon"]="󰂲"
+    else
+        bluetooth_connection["active"]=true
+        bt_output=$(bluetoothctl devices Connected 2>/dev/null)
+
+        if [[ -n $bt_output ]]; then
+            first_line="${bt_output%%$'\n'*}"
+
+            read -r _ mac name_rest <<<"$first_line"
+            device_name="${first_line#* * }"
+
+            bluetooth_connection["state"]="connected"
+            bluetooth_connection["device_mac"]="$mac"
+            bluetooth_connection["device_name"]="$device_name"
+            bluetooth_connection["icon"]="󰂱"
+        else
+            bluetooth_connection["state"]="disconnected"
+            bluetooth_connection["icon"]="󰂯"
+        fi
+    fi
 fi
 
-
-# --- Output JSON for Eww ---
 printf '{
+    "wifi_active": %s,
     "wifi_state": "%s",
-    "wifi_icon": "%s",
     "wifi_device": "%s",
-    "ssid": "%s",
-    "is_bluetooth_daemon_active": %s,
-    "is_bluetooth_connected": %s,
+    "wifi_ssid": "%s",
+    "wifi_signal": "%s",
+    "wifi_bars": "%s",
+    "wifi_security": "%s",
+    "wifi_icon": "%s",
+    "bluetooth_active": %s,
+    "bluetooth_state": "%s",
+    "bluetooth_device_mac": "%s",
+    "bluetooth_device_name": "%s",
     "bluetooth_icon": "%s",
-    "connected_device": "%s",
-    "is_vpn_active": %s,
+    "vpn_active": %s,
+    "vpn_device": "%s",
     "vpn_icon": "%s",
-    "vpn_interface": "%s",
-    "is_eth_connected": %s,
+    "eth_active": %s,
     "eth_icon": "%s",
-    "is_airplane_active": "%s",
+    "airplane_active": %s,
     "airplane_icon": "%s"
 }\n' \
-    "$wifi_state" \
-    "$wifi_icon" \
-    "$wifi_device" \
-    "$ssid" \
-    "$is_bluetooth_daemon_active" \
-    "$is_bluetooth_connected" \
-    "$bluetooth_icon" \
-    "$connected_device" \
-    "$is_vpn_active" \
-    "$vpn_icon" \
-    "$vpn_interface" \
-    "$is_eth_connected" \
-    "$eth_icon" \
-    "$is_airplane_active" \
-    "$airplane_icon" | jq -c '.'
+    "${wifi_connection["active"]:-false}" \
+    "${wifi_connection["state"]}" \
+    "${wifi_connection["device"]}" \
+    "${wifi_connection["ssid"]}" \
+    "${wifi_connection["signal"]}" \
+    "${wifi_connection["bars"]}" \
+    "${wifi_connection["security"]}" \
+    "${wifi_connection["icon"]}" \
+    "${bluetooth_connection["active"]:-false}" \
+    "${bluetooth_connection["state"]}" \
+    "${bluetooth_connection["device_mac"]}" \
+    "${bluetooth_connection["device_name"]}" \
+    "${bluetooth_connection["icon"]}" \
+    "${network_status["vpn"]:-false}" \
+    "${network_status["vpn_device"]}" \
+    "$([[ ${network_status["vpn"]} ]] && echo '󰒘' || echo '󰦞')" \
+    "${network_status["eth"]:-false}" \
+    "$([[ ${network_status["eth"]} ]] && echo '󰌘' || echo '󰌙')" \
+    "${network_status["plane_mode"]:-false}" \
+    "$([[ ${network_status["plane_mode"]} ]] && echo '󰀝' || echo '󱢂')" | jq -c .

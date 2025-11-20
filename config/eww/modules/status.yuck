@@ -13,14 +13,14 @@
                 :halign "end"
                 :valign "start"
                 :space-evenly false
-                :visible {!netinfo.is_airplane_active}
+                :visible {!netinfo.airplane_active}
                 (box
                     :orientation "h" 
                     :class "status_box"
                     :space-evenly false
                     :spacing 5
-                    :visible {netinfo.is_bluetooth_connected}
-                    (label :class "status_text" :text "${netinfo.connected_device}" :xalign 1 :limit-width 7)
+                    :visible {netinfo.bluetooth_active}
+                    (label :class "status_text" :text "${netinfo.bluetooth_device_name}" :xalign 1 :limit-width 7)
                     (label :class "status_icon" :text "${netinfo.bluetooth_icon}" :xalign 1)
                 )
                 (box
@@ -28,8 +28,8 @@
                     :class "status_box"
                     :space-evenly false
                     :spacing 5
-                    :visible {netinfo.is_vpn_active}
-                    (label :class "status_text" :text "${netinfo.vpn_interface}" :xalign 1 :limit-width 7)
+                    :visible {netinfo.vpn_active}
+                    (label :class "status_text" :text "${netinfo.vpn_device}" :xalign 1 :limit-width 7)
                     (label :class "status_icon" :text "${netinfo.vpn_icon}" :xalign 1)
                 )
                 (box
@@ -37,14 +37,14 @@
                     :class "status_box"
                     :space-evenly false
                     :spacing 5
-                    (label :visible {netinfo.wifi_state == "connected"} :class "status_text" :text "${netinfo.ssid}" :xalign 1 :limit-width 7)
-                    (label :class "status_icon" :text "${netinfo.is_eth_connected ? netinfo.eth_icon : netinfo.wifi_icon}" :xalign 1)
+                    (label :visible {netinfo.wifi_state == "connected"} :class "status_text" :text "${netinfo.wifi_ssid}" :xalign 1 :limit-width 7)
+                    (label :class "status_icon" :text "${netinfo.eth_active ? netinfo.eth_icon : netinfo.wifi_icon}" :xalign 1)
                 )
             )
             (box
                 :orientation "h" 
                 :class "status_box"
-                :visible {netinfo.is_airplane_active}
+                :visible {netinfo.airplane_active}
                 (label :class "status" :text "${netinfo.airplane_icon}" :xalign 1)
             )
         )

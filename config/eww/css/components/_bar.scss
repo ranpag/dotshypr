@@ -59,6 +59,9 @@
     padding: 0 3px;
 
     .battery_icon { font-size: .8em; }
+    .circle.low { color: $error; }
+    .circle.warning { color: $warning; }
+    .circle.full { color: $success; }
 }
 
 

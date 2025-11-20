@@ -1,22 +1,20 @@
 #!/usr/bin/env bash
 
-ws=$(hyprctl activeworkspace -j | jq -r '.name')
-title=$(hyprctl activewindow -j | jq -r '.title')
+ws_id="$(hyprctl activeworkspace -j | jq -r '.id')"
+ws_name="$(hyprctl activeworkspace -j | jq -r '.name')"
+win_title="$(hyprctl activewindow -j | jq -r '.title')"
 
-printf '{"current_workspace": "%s", "focused_window_title": "%s"}\n' "$ws" "$title"
-sh ~/.config/eww/scripts/_eww_hyprclients.sh --sync
+printf '{"current_workspace_id": %d, "current_workspace_name": "%s", "focused_window_title": "%s"}\n' \
+    "$ws_id" "$ws_name" "$win_title"
 
 socat -u UNIX-CONNECT:$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock - |
     stdbuf -o0 awk -F '>>|,' -e '
-        /^activewindow>>/   { title = $3; print_json(); next }
-        /^workspace>>/      { ws = $2; print_json(); next }
-        /^openwindow>>/     { system("sh ~/.config/eww/scripts/_eww_hyprclients.sh --open " $2 " " $3); next }
+        /^activewindow>>/   { win_title = $3; print_json(); next }
+        /^workspacev2>>/    { ws_id = $2; ws_name = $3; print_json(); next }
+        /^openwindow>>/ && $4 != "" { system("sh ~/.config/eww/scripts/_eww_hyprclients.sh --open " $2 " " $4); next }
         /^closewindow>>/    { system("sh ~/.config/eww/scripts/_eww_hyprclients.sh --close " $2); next }
-        /^movewindowv2>>/     { system("sh ~/.config/eww/scripts/_eww_hyprclients.sh --move " $2 " " $3); next }
-        /^createworkspacev2>>/     { system("sh ~/.config/eww/scripts/_eww_hyprclients.sh --create-ws " $2 " " $3); next }
-        /^destroyworkspacev2>>/     { system("sh ~/.config/eww/scripts/_eww_hyprclients.sh --destroy-ws " $2); next }
 
         function print_json() {
-            printf "{\"current_workspace\": \"%s\", \"focused_window_title\": \"%s\"}\n", ws, title
+            printf "{\"current_workspace_id\": %d, \"current_workspace_name\": \"%s\", \"focused_window_title\": \"%s\"}\n", ws_id, ws_name, win_title
         }
     '

@@ -1,6 +1,6 @@
 (defwidget mini_player_widget [metadata]
     (tooltip
-        (label :class "tooltip" :text "${metadata?.icon} ${metadata?.artist ?: ''} — ${metadata?.title ?: metadata?.empty }")
+        (label :class "tooltip" :markup "${metadata?.icon} ${metadata?.artist ?: ''} — ${metadata?.title ?: metadata?.empty }")
         (box
             :orientation "h"
             :class "container mini_player_box"
@@ -13,7 +13,7 @@
                 (overlay
                     (image
                         :class "player_image_box"
-                        :path {metadata?.artUrl}
+                        :path "${metadata?.art_url}"
                         :image-width 40
                         :image-height 40
                     )
@@ -24,7 +24,7 @@
                 :orientation "v" 
                 :space-evenly false
                 :spacing 4
-                (label :class "player_artist" :text "${metadata?.icon} ${metadata?.artist ?: '—'}" :xalign 0 :limit_width 18)
+                (label :class "player_artist" :markup "${metadata?.icon} ${metadata?.artist ?: '—'}" :xalign 0 :limit-width 18)
                 (label :class "player_title" :text "${metadata?.title ?: metadata?.empty }" :xalign 0 :limit-width 30)
             )
         )

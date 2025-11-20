@@ -147,7 +147,7 @@
                 :value-pos "right"
                 :min 1
                 :max 100
-                :value {brightness.screen}
+                :value {brightness?.screen}
                 :hexpand true
                 :onchange "brightnessctl set {}% -q"
             )
