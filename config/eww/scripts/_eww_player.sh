@@ -10,7 +10,6 @@ escape() {
 PLAYER_ART_DEFAULT_DIR="assets/images/player"
 PLAYER_ICON_DEFAULT="󰎇 "
 PLAYER_ART_DEFAULT="$PLAYER_ART_DEFAULT_DIR/default.png"
-art_tmp_file=""
 
 get_metadata_json() {
     local player_status="$(playerctl status)"
@@ -22,24 +21,6 @@ get_metadata_json() {
         local art_url="${4:-"$(playerctl metadata mpris:artUrl)"}"
         local icon=""
         local art_default="$PLAYER_ART_DEFAULT"
-
-        if [[ $art_url =~ ^https:// ]]; then
-            if [[ -f "/tmp/${art_url##*/}" ]]; then
-                art_tmp_file="/tmp/${art_url##*/}"
-                art_url="$art_tmp_file"
-            else
-                [[ -n $art_tmp_file ]] && rm -f "$art_tmp_file"
-
-                art_tmp_file="/tmp/${art_url##*/}"
-                if curl -s -f "$art_url" -o "$art_tmp_file"; then
-                    art_url="$art_tmp_file"
-                else
-                    art_url=""
-                fi
-            fi
-        elif [[ $art_url =~ ^file:// ]]; then
-            art_url="${art_url/'file://'/''}"
-        fi
 
         if [[ $url =~ youtube ]]; then
             icon='<span color=\"#FF0000\"></span>'
@@ -54,8 +35,8 @@ get_metadata_json() {
 
         artist="$(escape "$artist")"
         title="$(escape "$title")"
-        icon="${icon:-PLAYER_ICON_DEFAULT}"
-        art_url="${art_url:-art_default}"
+        icon="${icon:-$PLAYER_ICON_DEFAULT}"
+        art_url="${art_url:-$art_default}"
 
         printf '{"icon": "%s", "artist": "%s", "title": "%s", "art_url": "%s", "url": "%s", "status": "%s"}\n' \
             "$icon" "$artist" "$title" "$art_url" "$url" "$player_status"        

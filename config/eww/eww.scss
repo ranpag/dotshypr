@@ -19,7 +19,7 @@ window {
     background:
         linear-gradient($background, $background) padding-box,
         linear-gradient(45deg, $primary, $secondary, $tertiary) border-box;
-    border-radius: 8px;
+    border-radius: 1.23em;
     border-bottom: 2px solid transparent;
     padding: 5px 8px;
     box-shadow: 2px -2px 5px rgba(0, 0, 0, 0.4);

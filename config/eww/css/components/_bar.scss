@@ -22,8 +22,13 @@
 
 
 .mini_player_box {
-    .player_image_box { border-radius: 8px; }
     .player_play_pause { font-size: 1.4em; }
+    .player_image_box {
+        border-radius: 8px;
+        background-repeat: no-repeat;
+        background-clip: content-box;
+        background-size: cover;
+    }
     .player_artist {
         font-size: 1.4em;
         font-weight: bold;

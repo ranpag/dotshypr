@@ -1,23 +1,23 @@
 (defwidget mini_player_widget [metadata]
     (tooltip
-        (label :class "tooltip" :markup "${metadata?.icon} ${metadata?.artist ?: ''} — ${metadata?.title ?: metadata?.empty }")
+        (label :class "tooltip" :markup "${metadata?.icon}  ${metadata?.artist ?: ''} — ${metadata?.title ?: metadata?.empty }")
         (box
             :orientation "h"
             :class "container mini_player_box"
             :space-evenly false
             :spacing 8
             (eventbox
-                :onhover "eww update show_play_pause=true"
-                :onhoverlost "eww update show_play_pause=false"
+                :onhover "eww update SHOW_PLAY_PAUSE=true"
+                :onhoverlost "eww update SHOW_PLAY_PAUSE=false"
                 :onclick "playerctl play-pause"
-                (overlay
-                    (image
-                        :class "player_image_box"
-                        :path "${metadata?.art_url}"
-                        :image-width 40
-                        :image-height 40
-                    )
-                    (label :visible show_play_pause :class "player_play_pause" :text "${metadata?.status == 'Playing' ? '' : ''}" :xalign 0.4 :yalign 0.5)
+                (box
+                    :class "player_image_box"
+                    :style "background-image: url('${metadata?.art_url}');"
+                    :width 40
+                    :height 40
+                    :halign "start"
+                    :valign "center"
+                    (label :visible SHOW_PLAY_PAUSE :class "player_play_pause" :text "${metadata?.status == 'Playing' ? '' : ''}" :xalign 0.4 :yalign 0.5)
                 )
             )
             (box
