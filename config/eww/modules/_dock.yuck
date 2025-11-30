@@ -4,39 +4,80 @@
         :space-evenly false
         :valign "end"
         (eventbox
-            :onhoverlost "eww update show_dock=false"
+            :onhoverlost "eww update SHOW_DOCK=false"
             (revealer
                 :transition "slideup"
-                :reveal {show_dock || show_dock_persist}
+                :reveal {SHOW_DOCK || SHOW_DOCK_PERSIST}
                 (box
                     :orientation "h" 
                     :class "container"
                     :space-evenly false
-                    (eventbox
-                        :onclick "eww update show_dock_persist=${!show_dock_persist}"
-                        :cursor "pointer"
-                        (tooltip
-                            (label :class "tooltip" :text "Always show")
-                            (image
-                                :image-width 20
-                                :image-height 20
-                                :icon-size 20
-                                :path "assets/svg/pin-${show_dock_persist ? 'off' : 'on'}.svg"
+                    (box
+                        :orientation "v"
+                        :valign "center"
+                        :halign "center"
+                        :space-evenly false
+                        :spacing 15
+                        (eventbox
+                            :onclick "eww update SHOW_DOCK_PERSIST=${!SHOW_DOCK_PERSIST}"
+                            :cursor "pointer"
+                            :halign "center"
+                            (tooltip
+                                (label :class "tooltip" :text "Always show")
+                                (image
+                                    :image-width 20
+                                    :image-height 20
+                                    :icon-size 20
+                                    :path "assets/svg/pin-${SHOW_DOCK_PERSIST ? 'off' : 'on'}.svg"
+                                )
+                            )
+                        )
+                        (eventbox
+                            :onclick "eww update DOCK_MODE=apps"
+                            :cursor "pointer"
+                            :halign "center"
+                            :visible {DOCK_MODE != "apps"}
+                            (tooltip
+                                (label :class "tooltip" :text "Apps")
+                                (image
+                                    :image-width 15
+                                    :image-height 15
+                                    :icon-size 15
+                                    :path "assets/svg/apps.svg"
+                                )
+                            )
+                        )
+                        (eventbox
+                            :onclick "eww update DOCK_MODE=keyboard"
+                            :cursor "pointer"
+                            :halign "center"
+                            :visible {DOCK_MODE != "apps"}
+                            (tooltip
+                                (label :class "tooltip" :text "Keyboard Virtual")
+                                (image
+                                    :image-width 18
+                                    :image-height 18
+                                    :icon-size 18
+                                    :path "assets/svg/keyboard.svg"
+                                )
                             )
                         )
                     )
                     
                     (label :text "｜" :style "color:rgba(128, 128, 128, .4);")
 
-                    (clients_widget)
+                    (box :visible {DOCK_MODE == "apps"} (clients_widget))
+                    (box :visible {DOCK_MODE == "keyboard"} (keyboard_virtual_widget))
                                       
-                    (label :text "｜" :style "color:rgba(128, 128, 128, .5);")
+                    (label :text "｜" :style "color:rgba(128, 128, 128, .5);" :visible {DOCK_MODE == "apps"})
                     
                     (eventbox
                         :onclick "notify-send 'app launcher'"
+                        :onrightclick "eww update DOCK_MODE=keyboard"
                         :cursor "pointer"
+                        :visible {DOCK_MODE == "apps"}
                         (tooltip
-                            (label :class "tooltip" :text "Open app launcher")
+                            (label :class "tooltip" :text "App launcher | More Option")
                             (image
                                 :image-width 32
                                 :image-height 32
@@ -49,14 +90,14 @@
             )
         )
         (eventbox
-            :onhover "eww update show_dock=true"
+            :onhover "eww update SHOW_DOCK=true"
             (box
                 :class "container"
                 :orientation "v"
                 :valign "end"
                 :space-evenly false
                 :height 3
-                :visible {!show_dock && !show_dock_persist}
+                :visible {!SHOW_DOCK && !SHOW_DOCK_PERSIST}
             )
         )
     )

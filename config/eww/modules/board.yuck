@@ -1,0 +1,48 @@
+(defwidget keyboard_virtual_widget []
+    (box
+        :class "keyboard_virtual"
+        :orientation "v"
+        :space-evenly false
+        (for row in keyboard
+            (box
+                :orientation "h"
+                :space-evenly false
+                (for key in {row}
+                    (button
+                        :class "key ${key.down =~ 'Shift|Caps|Ctrl|Alt' 
+                            ? (key.down == 'Shift' ? (KEYBOARD_SHIFT ? 'key_active' : 'key_deactive') 
+                            : (key.down == 'Caps' ? (KEYBOARD_CAPS ? 'key_active' : 'key_deactive') 
+                            : (key.down == 'Ctrl' ? (KEYBOARD_CTRL ? 'key_active' : 'key_deactive') 
+                            : (key.down == 'Alt' ? (KEYBOARD_ALT ? 'key_active' : 'key_deactive') : '')))) 
+                            : ''
+                        }"
+                        :width {50 * (key.width ?: 1)}
+                        :height {50 * (key.height ?: 1)}
+                        :onclick "${key.down =~ 'Shift|Caps|Ctrl|Alt' 
+                            ? (key.down == 'Shift' ? 'eww update KEYBOARD_SHIFT=' + !KEYBOARD_SHIFT 
+                            : (key.down == 'Caps' ? 'eww update KEYBOARD_CAPS=' + !KEYBOARD_CAPS 
+                            : (key.down == 'Ctrl' ? 'eww update KEYBOARD_CTRL=' + !KEYBOARD_CTRL 
+                            : (key.down == 'Alt' ? 'eww update KEYBOARD_ALT=' + !KEYBOARD_ALT : '')))) 
+                            : (key.command ?: 'wtype ' + (key.type == 'alphabet' 
+                                ? ( (KEYBOARD_CAPS && !KEYBOARD_SHIFT) || (!KEYBOARD_CAPS && KEYBOARD_SHIFT) 
+                                    ? key.up 
+                                    : key.down
+                                ) 
+                                : ( KEYBOARD_SHIFT ? key.up : key.down )))
+                        }"
+                        (label 
+                            :text "${
+                                key.type == 'alphabet' 
+                                    ? ( (KEYBOARD_CAPS && !KEYBOARD_SHIFT) || (!KEYBOARD_CAPS && KEYBOARD_SHIFT) 
+                                        ? key.up 
+                                        : key.down
+                                    )
+                                    : ( KEYBOARD_SHIFT ? key.up : key.down )
+                            }"
+                        )
+                    )
+                )
+            )
+        )
+    )
+)

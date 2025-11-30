@@ -1,8 +1,10 @@
 (include "./variables.yuck")
 (include "./modules/localy.yuck")
 (include "./modules/hyprland.yuck")
+(include "./modules/board.yuck")
 (include "./modules/player.yuck")
 (include "./modules/status.yuck")
+
 (include "./modules/_bar.yuck")
 (include "./modules/_dock.yuck")
 (include "./modules/_sidecontrol.yuck")
