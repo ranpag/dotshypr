@@ -77,10 +77,11 @@
     { "down": "Shift", "up": "Shift", "width": 2.5 }
   ],
   [
-    { "down": "Ctrl", "up": "Ctrl", "width": 2 },
-    { "down": "Alt", "up": "Alt", "width": 2 },
+    { "down": "Ctrl", "up": "Ctrl", "width": 1.6 },
+    { "down": "", "up": "", "alt": "win", "width": 1.6 },
+    { "down": "Alt", "up": "Alt", "width": 1.6 },
     { "down": "Space", "up": "Space", "command": "wtype -k Space", "width": 7 },
-    { "down": "Alt", "up": "Alt", "width": 2 },
-    { "down": "Ctrl", "up": "Ctrl", "width": 2 }
+    { "down": "Alt", "up": "Alt", "width": 1.6 },
+    { "down": "Ctrl", "up": "Ctrl", "width": 1.6 }
   ]
 ]

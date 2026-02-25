@@ -1,10 +1,10 @@
 (defvar SHOW_PLAY_PAUSE false)
-(defvar DOCK_MODE "keyboard")
+(defvar DOCK_MODE "apps")
 (defvar SHOW_DOCK true)
 (defvar SHOW_DOCK_PERSIST false)
 (defvar SHOW_SIDECONTROL false)
 
-(defvar KEYBOARD_FN false)
+(defvar KEYBOARD_WIN false)
 (defvar KEYBOARD_CTRL false)
 (defvar KEYBOARD_ALT false)
 (defvar KEYBOARD_SHIFT false)
@@ -12,20 +12,21 @@
 
 
 ; SYSTEM
-(deflisten  brightness                  :initial "{}" `scripts/_eww_brightness.sh`)
-(defpoll    netinfo     :interval "5s"  :initial "{}" `scripts/_eww_netinfo.sh`)
-(defpoll    battery     :interval "3s"  :initial "{}" `scripts/_eww_power.sh`)
-(defpoll    uptime      :interval "60s" :initial "" :run-while SHOW_SIDECONTROL
+(deflisten  brightness                     :initial "{}" `scripts/_eww_brightness.sh`)
+(defpoll    netinfo    :interval "5s"      :initial "{}" `scripts/_eww_netinfo.sh`)
+(defpoll    battery    :interval "3s"      :initial "{}" `scripts/_eww_power.sh`)
+(defpoll    uptime     :interval "60s"     :initial ""   :run-while SHOW_SIDECONTROL
     `uptime -p | sed -E "s/ hours?/h/; s/ minutes?/m/; s/up/Uptime/"`)
 
 
 
 ; BEHAVIOUR
-(defpoll    weather :interval "1800s"   :initial "{}" `scripts/_eww_weather.sh`)
-(deflisten  player-metadata             :initial "{}" `scripts/_eww_player.sh`)
-(defpoll    keyboard :interval "10s"    :initial "[]" `cat assets/keyboard.json | jq -c .`)
+(defpoll    weather    :interval "1800s"   :initial "{}" `scripts/_eww_weather.sh`)
+(deflisten  player-metadata                :initial "{}" `scripts/_eww_player.sh`)
+(defpoll    keyboard   :interval "60s"     :initial "[]" `jq -c . assets/keyboard.json`)
+(defpoll    emoji      :interval "60s"     :initial "[]" `jq -c . assets/emoji.json`)
 
 
 ; HYPRLAND
-(deflisten  hyprland                    :initial "{}" `scripts/_eww_hyprsocket.sh`)
-(defpoll    clients     :interval "15s" :initial "[]" `scripts/_eww_hyprclients.sh --sync`)
+(deflisten  hyprland                       :initial "{}" `scripts/_eww_hyprsocket.sh`)
+(defpoll    clients    :interval "15s"     :initial "[]" `scripts/_eww_hyprclients.sh --sync`)
