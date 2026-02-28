@@ -23,9 +23,9 @@
 ; BEHAVIOUR
 (defpoll    weather    :interval "1800s"   :initial "{}" `scripts/_eww_weather.sh`)
 (deflisten  player-metadata                :initial "{}" `scripts/_eww_player.sh`)
-(defpoll    keyboard   :interval "60s"     :initial "[]" `jq -c . assets/keyboard.json`)
-(defpoll    emoji      :interval "60s"     :initial "[]" `jq -c . assets/emoji.json`)
-
+(defpoll    keyboard   :interval "60s"     :initial "[]" :run-while {DOCK_MODE == "keyboard"} `jq -c . assets/keyboard.json`)
+(defpoll    emojis     :interval "60s"     :initial "[]" :run-while {DOCK_MODE == "emoji"} `jq -c . assets/emoji_chunked.json`)
+(defvar     current_group_emoji_name "Smileys & Emotion")
 
 ; HYPRLAND
 (deflisten  hyprland                       :initial "{}" `scripts/_eww_hyprsocket.sh`)

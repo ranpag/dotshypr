@@ -62,13 +62,29 @@
                                 )
                             )
                         )
+                        (eventbox
+                            :onclick "eww update DOCK_MODE=emoji"
+                            :cursor "pointer"
+                            :halign "center"
+                            :visible {DOCK_MODE != "apps"}
+                            (tooltip
+                                (label :class "tooltip" :text "Emoji Picker")
+                                (image
+                                    :image-width 18
+                                    :image-height 18
+                                    :icon-size 18
+                                    :path "assets/svg/emoji.svg"
+                                )
+                            )
+                        )
                     )
-                    
+
                     (label :text "｜" :style "color:rgba(128, 128, 128, .4);")
 
                     (box :visible {DOCK_MODE == "apps"} (clients_widget))
                     (box :visible {DOCK_MODE == "keyboard"} (keyboard_virtual_widget))
-                                      
+                    (box :visible {DOCK_MODE == "emoji"} (emoji_board_widget))
+                    
                     (label :text "｜" :style "color:rgba(128, 128, 128, .5);" :visible {DOCK_MODE == "apps"})
                     
                     (eventbox

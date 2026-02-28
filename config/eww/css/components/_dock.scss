@@ -5,3 +5,13 @@
     .key:hover { opacity: 0.7; }
     .key_active { background-color: $background; }
 }
+
+.emoji_picker {
+    background-color: $background_alt;
+    border-radius: 15px;
+    padding: 1em;
+
+    .emoji_group_name {
+        padding: 8px 8px;
+    }
+}

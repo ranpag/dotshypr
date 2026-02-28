@@ -51,3 +51,74 @@
         )
     )
 )
+
+(defwidget emoji_board_widget []
+    (box
+        :class "emoji_picker"
+        :orientation "h"
+        :space-evenly false
+        (box
+            :class "emoji_group_list"
+            :orientation "v"
+            :space-evenly false
+            :hexpand true
+            (for group in emojis
+                (eventbox
+                    :class "emoji_group_event"
+                    :onclick "eww update current_group_emoji_name='${group.group_name}' && eww update current_group_emoji_name='${group.group_name}'"
+                    :cursor "pointer"
+                    (label 
+                        :class "emoji_group_name"
+                        :text "${group.group_emoji}" 
+                        :xalign 0
+                    )
+                )
+            )
+        )
+        (label :text "｜" :style "color:rgba(128, 128, 128, .4);")
+        (box
+            :orientation "v"
+            :space-evenly false
+            :spacing 8
+            :vexpand true
+            (label :class "current_group_emoji" :text "~ ${current_group_emoji_name ?: ''}" )
+            (for group in emojis
+                (box
+                    :visible "${group.group_name == current_group_emoji_name}"
+                    :orientation "v"
+                    :space-evenly false
+                    :vexpand true
+                    (scroll
+                        :hscroll false
+                        :vscroll true
+                        :vexpand true
+                        (box
+                            :orientation "v"
+                            :space-evenly false
+                            :spacing 4
+                            (for chunk in {group.chunks}
+                                (box
+                                    :orientation "h"
+                                    :space-evenly false
+                                    :spacing 4
+                                    (for emoji_item in {chunk}
+                                        (tooltip
+                                            (label :class "tooltip" :text "${emoji_item.name}")
+                                            (button
+                                                :class "emoji_btn"
+                                                :onclick "wtype ${emoji_item.emoji}"
+                                                :width 40
+                                                :height 40
+                                                (label :text "${emoji_item.emoji}" :xalign 0.5)
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        )
+    )
+)
