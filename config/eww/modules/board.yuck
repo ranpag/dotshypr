@@ -62,13 +62,14 @@
             :orientation "v"
             :space-evenly false
             :hexpand true
+            :spacing 4
             (for group in emojis
                 (eventbox
                     :class "emoji_group_event"
                     :onclick "eww update current_group_emoji_name='${group.group_name}' && eww update current_group_emoji_name='${group.group_name}'"
                     :cursor "pointer"
                     (label 
-                        :class "emoji_group_name"
+                        :class "emoji_group_name ${current_group_emoji_name == group.group_name ? 'active' : ''}"
                         :text "${group.group_emoji}" 
                         :xalign 0
                     )
@@ -84,7 +85,7 @@
             (label :class "current_group_emoji" :text "~ ${current_group_emoji_name ?: ''}" )
             (for group in emojis
                 (box
-                    :visible "${group.group_name == current_group_emoji_name}"
+                    :visible {group.group_name == current_group_emoji_name}
                     :orientation "v"
                     :space-evenly false
                     :vexpand true
