@@ -123,3 +123,114 @@
         )
     )
 )
+
+(defwidget clipboard_widget []
+    (box
+        :class "clipboard"
+        :orientation "v"
+        :space-evenly false
+        :height 330
+        :width 530
+        :spacing 8
+        (box
+            :class "header"
+            :orientation "h"
+            :space-evenly false
+            (label :class "heading" :text "Clipboard")
+            (label :text "｜" :style "color:rgba(128, 128, 128, .4);")
+            (box
+                :orientation "h"
+                :space-evenly false
+                :spacing 8
+                (eventbox 
+                    :onclick "eww update current_clipboard_preview='text'"
+                    :cursor "pointer"
+                    (label 
+                        :class "clipboard_type_event" 
+                        :style "${current_clipboard_preview == 'text' ? 'border-bottom: 1px solid grey' : ''}" 
+                        :text "TEXT"
+                    )
+                )
+                (eventbox 
+                    :onclick "eww update current_clipboard_preview='file'"
+                    :cursor "pointer"
+                    (label 
+                        :class "clipboard_type_event" 
+                        :style "${current_clipboard_preview == 'file' ? 'border-bottom: 1px solid grey' : ''}" 
+                        :text "FILE"
+                    )
+                )
+            )
+        )
+        (box
+            :class "content"
+            :orientation "v"
+            :space-evenly false
+            :visible {clipboard[0].type == current_clipboard_preview}
+            :vexpand true
+            (scroll
+                :hscroll false
+                :vscroll true
+                :vexpand true
+                (box
+                    :orientation "v"
+                    :space-evenly false
+                    :spacing 4
+                    (for item in {clipboard[0].data}
+                        (button
+                            :class "clip_item"
+                            :height 32
+                            :hexpand true
+                            :onclick "cliphist decode ${item.id} | wl-copy"
+                            (label 
+                                :unindent true
+                                :xalign 0
+                                :text "${item.preview}" 
+                            )
+                        )
+                    )
+                )
+            )
+        )
+        (box
+            :class "content"
+            :orientation "v"
+            :space-evenly false
+            :visible {clipboard[1].type == current_clipboard_preview}
+            :vexpand true
+            (scroll
+                :hscroll false
+                :vscroll true
+                :vexpand true
+                (box
+                    :orientation "v"
+                    :space-evenly false
+                    :spacing 4
+                    (for chunk in {clipboard[1].data}
+                        (box 
+                            :orientation "h"
+                            :space-evenly false
+                            :spacing 4
+                            (for item in {chunk}
+                                (eventbox
+                                    :onclick "cliphist decode ${item.id} | wl-copy"
+                                    :cursor "pointer"
+                                    (box
+                                        :class "image_box"
+                                        
+                                        (image
+                                            :class ""
+                                            :image-width 55
+                                            :image-height 55
+                                            :path "${item.preview}"
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        )
+    )
+)

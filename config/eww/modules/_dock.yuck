@@ -77,6 +77,21 @@
                                 )
                             )
                         )
+                        (eventbox
+                            :onclick "eww update DOCK_MODE=clipboard"
+                            :cursor "pointer"
+                            :halign "center"
+                            :visible {DOCK_MODE != "apps"}
+                            (tooltip
+                                (label :class "tooltip" :text "Clipboard")
+                                (image
+                                    :image-width 20
+                                    :image-height 20
+                                    :icon-size 20
+                                    :path "assets/svg/clipboard.svg"
+                                )
+                            )
+                        )
                     )
 
                     (label :text "｜" :style "color:rgba(128, 128, 128, .4);")
@@ -84,6 +99,7 @@
                     (box :visible {DOCK_MODE == "apps"} (clients_widget))
                     (box :visible {DOCK_MODE == "keyboard"} (keyboard_virtual_widget))
                     (box :visible {DOCK_MODE == "emoji"} (emoji_board_widget))
+                    (box :visible {DOCK_MODE == "clipboard"} (clipboard_widget))
                     
                     (label :text "｜" :style "color:rgba(128, 128, 128, .5);" :visible {DOCK_MODE == "apps"})
                     

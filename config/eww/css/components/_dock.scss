@@ -13,5 +13,29 @@
 
     .emoji_group_name {
         padding: 8px 8px;
+        border-radius: 7.5px;
+    }
+
+    .emoji_group_name.active {
+        background-color: $background;
+    }
+}
+
+.clipboard {
+    background-color: $background_alt;
+    border-radius: 15px;
+    padding: 1em;
+
+    .heading {
+        font-size: 16px;
+        font-weight: normal;
+    }
+
+    .clip_item { 
+        padding-left: 8px;
+    }
+
+    .image_box {
+        background-color: $success;
     }
 }
